@@ -10,7 +10,7 @@ Este arquivo registra os prompts utilizados ao longo do desenvolvimento. Novos p
 4. Sim. (Confirmação para adicionar conteúdo/ações específicas em cada página.)
 5. Crie um .html para a cpu. / Crie um html para o elemento cpu.
 6. Crie um .html para placa também.
-7. Sim. (Confirmação para abrir placa.html automaticamente ao atingir 1964 terminais.)
+7. Sim. (Confirmação para abrir index.html automaticamente ao atingir 1964 terminais.)
 8. Crie um arquivo com os prompts usados até aqui e registre os próximos conforme forem usados. (Este arquivo.)
 
 ## Próximos prompts
