@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAM B</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; background: #0a0a0a; color: #d0d0d0; }
+        body { font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; }
+        .screen { width: min(100vw, 1280px); height: 100vh; background: #000; padding: 16px; overflow: hidden; border-left: 2px solid #111; border-right: 2px solid #111; }
+        .code { white-space: pre; font-size: 14px; line-height: 1.4; }
+        .cursor { display: inline-block; width: 8px; background: #00ffff; animation: blink 1s steps(1) infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div id="code" class="code"></div>
+    </div>
+
+    <script>
+        // Redireciona após 40 segundos
+        setTimeout(() => { window.location.href = 'cpu.html'; }, 40000);
+
+        // Geração acelerada de "códigos" (0,025s, em linha com os terminais)
+        const codeEl = document.getElementById('code');
+        const snippets = [
+`// Init chess match\nconst game = new Chess();\nlet moves = [];\n`,
+`// Opening: Sicilian Defense\nmoves.push('e4'); moves.push('c5');\n`,
+`// Development\nmoves.push('Nf3'); moves.push('d6');\nmoves.push('d4'); moves.push('cxd4');\n`,
+`// Engine eval\nfunction evalPosition(fen){ return Math.random()*0.5 - 0.25; }\n`,
+`// Choose best line\nfunction chooseMove(g){\n  const legal = g.legal_moves();\n  return legal[Math.floor(Math.random()*legal.length)];\n}\n`,
+`// Loop\nfor (let i=0;i<100;i++){\n  const mv = chooseMove(game);\n  game.play(mv);\n}\n`,
+`// PGN\nconsole.log(game.toPGN());\n`,
+`/* Bitboard ops */\nconst BB = { A_FILE: 0xff01010101010101n };\nfunction popcount(x){ let c=0n; while(x){ x&=x-1n; c++; } return c; }\n`,
+`// UCI adapter\nfunction uci(cmd){ if(cmd==='isready') return 'readyok'; }\n`,
+`// Search\nfunction negamax(pos, depth){ if(!depth) return evalPosition(pos); return -negamax(pos, depth-1); }\n`,
+`// Zobrist\nconst Z = new Uint32Array(781);\nfor(let i=0;i<Z.length;i++){ Z[i]=(Math.random()*2**32)|0; }\n`,
+        ];
+
+        let i = 0;
+        function tick(){
+            // Append rapidly
+            const chunk = snippets[i % snippets.length];
+            codeEl.textContent += chunk + '\n';
+            i++;
+            // Autoscroll to bottom
+            codeEl.parentElement.scrollTop = codeEl.parentElement.scrollHeight;
+        }
+
+        const interval = setInterval(tick, 150);
+        // Safety clear on unload
+        window.addEventListener('beforeunload', () => clearInterval(interval));
+    </script>
+</body>
+</html>
+
+

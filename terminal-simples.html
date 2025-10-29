@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Simples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fundo cyberpunk */
+        .cyberpunk-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+
+        .neon-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .rain-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 0%, rgba(0, 255, 255, 0.03) 100%);
+            animation: rain 2s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rain {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .terminal-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .terminal-aleatorio {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00ffff;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 15px #00ffff,
+                0 0 30px #00ffff,
+                inset 0 0 10px rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: aparecer 0.5s ease-out forwards;
+        }
+
+        .terminal-aleatorio:hover {
+            transform: scale(1.2);
+            box-shadow: 
+                0 0 25px #00ffff,
+                0 0 50px #00ffff,
+                inset 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Segunda página */
+        .segunda-pagina {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #2d0a0a 50%, #4a0a0a 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2000;
+        }
+
+        /* Placa-mãe interativa */
+        .motherboard {
+            width: min(90vw, 820px);
+            height: auto;
+            aspect-ratio: 16/10;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255,0,0,0.08), transparent 40%),
+                        radial-gradient(ellipse at 80% 70%, rgba(255,0,0,0.06), transparent 45%),
+                        #0a0f12;
+            border: 2px solid rgba(255, 0, 0, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.15);
+            position: relative;
+            margin-bottom: 28px;
+            padding: 14px;
+        }
+
+        .motherboard svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            filter: drop-shadow(0 0 6px rgba(255,0,0,0.25));
+        }
+
+        .mb-track {
+            stroke: #1dffb5;
+            stroke-opacity: 0.55;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 4px rgba(29,255,181,0.35));
+        }
+
+        .mb-component {
+            cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+        }
+
+        .mb-component:hover {
+            transform: translateY(-2px) scale(1.02);
+            filter: drop-shadow(0 0 10px rgba(255,0,0,0.6));
+        }
+
+        .mb-label {
+            font: 600 12px 'Courier New', monospace;
+            fill: #ffb3b3;
+            text-shadow: 0 0 6px rgba(255,0,0,0.6);
+            pointer-events: none;
+        }
+
+        .mb-chip { fill: #1a1f27; stroke: #ff3b3b; stroke-width: 2; }
+        .mb-ram { fill: #142018; stroke: #35ff56; stroke-width: 2; }
+        .mb-slot { fill: #14141f; stroke: #9b7bff; stroke-width: 2; }
+        .mb-cap  { fill: #241616; stroke: #ff6b6b; stroke-width: 1.5; }
+        .mb-power { fill: #7a0b0b; stroke: #ff0000; stroke-width: 3; }
+
+        .pergunta-neon {
+            color: #ff0000;
+            font-size: 32px;
+            font-weight: bold;
+            text-shadow: 
+                0 0 10px #ff0000,
+                0 0 20px #ff0000,
+                0 0 30px #ff0000;
+            text-align: center;
+            animation: textoPulse 1.5s ease-in-out infinite alternate;
+            font-family: 'Courier New', monospace;
+        }
+
+        @keyframes quadradoPulse {
+            0% {
+                box-shadow: 
+                    0 0 30px #ff0000,
+                    0 0 60px #ff0000,
+                    inset 0 0 20px rgba(255, 255, 255, 0.2);
+            }
+            100% {
+                box-shadow: 
+                    0 0 50px #ff0000,
+                    0 0 100px #ff0000,
+                    inset 0 0 30px rgba(255, 255, 255, 0.4);
+            }
+        }
+
+        @keyframes textoPulse {
+            0% {
+                text-shadow: 
+                    0 0 10px #ff0000,
+                    0 0 20px #ff0000,
+                    0 0 30px #ff0000;
+            }
+            100% {
+                text-shadow: 
+                    0 0 20px #ff0000,
+                    0 0 40px #ff0000,
+                    0 0 60px #ff0000;
+            }
+        }
+
+        .counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #00ffff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            z-index: 1000;
+        }
+
+        .terminal {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00ffff;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 15px #00ffff,
+                0 0 30px #00ffff,
+                inset 0 0 10px rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .terminal:hover {
+            transform: scale(1.2);
+            box-shadow: 
+                0 0 25px #00ffff,
+                0 0 50px #00ffff,
+                inset 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .terminal-original {
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .terminal-novo {
+            opacity: 0;
+            animation: aparecer 0.5s ease-out forwards;
+        }
+
+        @keyframes aparecer {
+            0% {
+                opacity: 0;
+                transform: scale(0);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .info-text {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ffff;
+            font-size: 14px;
+            text-align: center;
+            text-shadow: 0 0 10px #00ffff;
+            white-space: nowrap;
+        }
+
+        /* Páginas dos componentes */
+        .component-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #1a0f0f 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 2500;
+            opacity: 0;
+            transition: opacity 250ms ease;
+        }
+
+        .component-card {
+            min-width: 260px;
+            max-width: 70vw;
+            padding: 22px 26px;
+            border-radius: 16px;
+            background: rgba(10, 10, 10, 0.6);
+            border: 2px solid rgba(255,0,0,0.35);
+            box-shadow: 0 0 24px rgba(255,0,0,0.35), inset 0 0 18px rgba(255,0,0,0.15);
+            color: #ffb3b3;
+            text-shadow: 0 0 6px rgba(255,0,0,0.4);
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+
+        .component-title {
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #ff4d4d;
+        }
+
+        .component-text {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .power-back {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            background: #190a0a;
+            box-shadow: 0 0 16px rgba(255,0,0,0.5), inset 0 0 10px rgba(255,0,0,0.25);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            z-index: 2600;
+        }
+
+        .power-back:hover { transform: scale(1.06); box-shadow: 0 0 22px rgba(255,0,0,0.8), inset 0 0 12px rgba(255,0,0,0.3); }
+        .power-back:active { transform: scale(0.98); }
+
+        /* Abas sobrepostas */
+        .header-tab,
+        .footer-tab {
+            position: fixed;
+            z-index: 4000; /* acima de toasts (3000) e demais elementos */
+            background: rgba(25, 10, 10, 0.9);
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255,0,0,0.6), inset 0 0 14px rgba(255,0,0,0.25);
+            color: #ff4d4d;
+            text-shadow: 0 0 10px rgba(255,0,0,0.9);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font: 700 14px 'Courier New', monospace;
+            pointer-events: none; /* não intercepta cliques nos terminais */
+        }
+        .header-tab { top: 10px; left: 50%; transform: translateX(-50%); }
+        .footer-tab { bottom: 10px; left: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Fundo cyberpunk -->
+    <div class="cyberpunk-bg"></div>
+    <div class="neon-grid"></div>
+    <div class="rain-effect"></div>
+    
+    <!-- Abas sobrepostas -->
+    <div class="header-tab">terminal_cyber_PC</div>
+    <div class="footer-tab">Gabriel Ceschi</div>
+    
+    <!-- Contador -->
+    <div class="counter" id="contador">Terminais: 1</div>
+    
+    <div class="terminal-container">
+        <div class="terminal terminal-original" onclick="criarNovosTerminais(this)"></div>
+        <div class="info-text">Clique para iniciar auto-criação a cada 0,025s (PG r=3) - 10x velocidade</div>
+    </div>
+
+    <!-- Segunda página -->
+    <div class="segunda-pagina" id="segundaPagina">
+        <div class="motherboard" aria-label="Placa-mãe interativa">
+            <svg viewBox="0 0 820 512" preserveAspectRatio="xMidYMid meet">
+                <!-- Trilhas: todas conectam componentes -->
+                <!-- RAM A -> CPU -->
+                <path class="mb-track" d="M240 133 H280 V210 H300"/>
+                <!-- RAM B -> CPU -->
+                <path class="mb-track" d="M240 173 H280 V270 H300"/>
+
+                <!-- CPU -> PCIe (duas trilhas) -->
+                <path class="mb-track" d="M450 230 H490 V337 H520"/>
+                <path class="mb-track" d="M450 270 H500 V337 H520"/>
+
+                <!-- CPU -> Capacitores C1/C2/C3 -->
+                <path class="mb-track" d="M450 210 H550"/>
+                <path class="mb-track" d="M450 220 H578 V210"/>
+                <path class="mb-track" d="M450 240 H606 V210"/>
+
+                <!-- POWER -> CPU e POWER -> RAM B -->
+                <path class="mb-track" d="M120 380 V300 H300"/>
+                <path class="mb-track" d="M120 380 H240 V173"/>
+
+                <!-- PCIe (direita) -> POWER (via PCIe) -->
+                <path class="mb-track" d="M760 337 H640 V380 H120"/>
+
+                <!-- CPU -->
+                <g class="mb-component" id="mb-CPU" data-component="CPU">
+                    <rect class="mb-chip" x="300" y="180" width="150" height="120" rx="10"/>
+                    <!-- pinos -->
+                    <g fill="#ff5c5c" opacity="0.9">
+                        <circle cx="315" cy="195" r="3"/><circle cx="335" cy="195" r="3"/><circle cx="355" cy="195" r="3"/><circle cx="375" cy="195" r="3"/>
+                        <circle cx="395" cy="195" r="3"/><circle cx="415" cy="195" r="3"/>
+                        <circle cx="315" cy="295" r="3"/><circle cx="335" cy="295" r="3"/><circle cx="355" cy="295" r="3"/><circle cx="375" cy="295" r="3"/>
+                        <circle cx="395" cy="295" r="3"/><circle cx="415" cy="295" r="3"/>
+                    </g>
+                    <text class="mb-label" x="375" y="245" text-anchor="middle">CPU</text>
+                </g>
+
+                <!-- Slots de RAM -->
+                <g class="mb-component" id="mb-RAM A" data-component="RAM A">
+                    <rect class="mb-ram" x="80" y="120" width="160" height="26" rx="5"/>
+                    <text class="mb-label" x="160" y="138" text-anchor="middle">RAM A</text>
+                </g>
+                <g class="mb-component" id="mb-RAM B" data-component="RAM B">
+                    <rect class="mb-ram" x="80" y="160" width="160" height="26" rx="5"/>
+                    <text class="mb-label" x="160" y="178" text-anchor="middle">RAM B</text>
+                </g>
+
+                <!-- Slot GPU/PCIe -->
+                <g class="mb-component" id="mb-PCIe x16" data-component="PCIe x16">
+                    <rect class="mb-slot" x="520" y="320" width="240" height="34" rx="6"/>
+                    <text class="mb-label" x="640" y="342" text-anchor="middle">PCIe x16</text>
+                </g>
+
+                <!-- Capacitores -->
+                <g class="mb-component" id="mb-Capacitor C1" data-component="Capacitor C1">
+                    <circle class="mb-cap" cx="540" cy="210" r="10"/>
+                </g>
+                <g class="mb-component" id="mb-Capacitor C2" data-component="Capacitor C2">
+                    <circle class="mb-cap" cx="570" cy="210" r="8"/>
+                </g>
+                <g class="mb-component" id="mb-Capacitor C3" data-component="Capacitor C3">
+                    <circle class="mb-cap" cx="600" cy="210" r="6"/>
+                </g>
+
+                <!-- Botão de energia (o antigo botão vermelho vira parte da placa) -->
+                <g class="mb-component" id="mb-POWER" data-component="Power" aria-label="Botão de energia">
+                    <circle class="mb-power" cx="120" cy="380" r="26"/>
+                    <path d="M120 360 v18" stroke="#ffcccc" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M105 386 a15 15 0 1 0 30 0" fill="none" stroke="#ffcccc" stroke-width="4" stroke-linecap="round"/>
+                    <text class="mb-label" x="120" y="420" text-anchor="middle">POWER</text>
+                </g>
+            </svg>
+        </div>
+        <div class="pergunta-neon">o que v0c3 pr0curA??</div>
+    </div>
+
+    <!-- Páginas por componente -->
+    <div class="component-page" id="page-CPU" role="dialog" aria-label="CPU">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">CPU</div>
+            <div class="component-text" style="margin-bottom:12px">Ajuste o clock (GHz) e veja o brilho do chip.</div>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Clock: <span id="cpu-clock-val">3.2</span> GHz</label>
+            <input id="cpu-clock" type="range" min="1.0" max="5.0" step="0.1" value="3.2" style="width:280px">
+        </div>
+    </div>
+
+    <div class="component-page" id="page-RAM A" role="dialog" aria-label="RAM A">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">RAM A</div>
+            <div class="component-text" style="margin-bottom:12px">Ative/desative e defina capacidade.</div>
+            <label style="display:block;margin:8px 0"><input id="ramA-enabled" type="checkbox" checked> Ativada</label>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Capacidade: <span id="ramA-capacity-val">8</span> GB</label>
+            <input id="ramA-capacity" type="range" min="2" max="32" step="2" value="8" style="width:280px">
+        </div>
+    </div>
+
+    <div class="component-page" id="page-RAM B" role="dialog" aria-label="RAM B">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">RAM B</div>
+            <div class="component-text" style="margin-bottom:12px">Ative/desative e defina capacidade.</div>
+            <label style="display:block;margin:8px 0"><input id="ramB-enabled" type="checkbox"> Ativada</label>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Capacidade: <span id="ramB-capacity-val">0</span> GB</label>
+            <input id="ramB-capacity" type="range" min="0" max="32" step="2" value="0" style="width:280px">
+        </div>
+    </div>
+
+    <div class="component-page" id="page-PCIe x16" role="dialog" aria-label="PCIe x16">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">PCIe x16</div>
+            <div class="component-text" style="margin-bottom:12px">Habilite o slot e observe o brilho.</div>
+            <label style="display:block;margin:8px 0"><input id="pcie-enabled" type="checkbox" checked> Habilitado</label>
+        </div>
+    </div>
+
+    <div class="component-page" id="page-Capacitor C1" role="dialog" aria-label="Capacitor C1">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">Capacitor C1</div>
+            <div class="component-text" style="margin-bottom:12px">Ajuste o ripple (ganho).</div>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Ripple: <span id="c1-ripple-val">0.5</span></label>
+            <input id="c1-ripple" type="range" min="0" max="1" step="0.05" value="0.5" style="width:280px">
+        </div>
+    </div>
+
+    <div class="component-page" id="page-Capacitor C2" role="dialog" aria-label="Capacitor C2">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">Capacitor C2</div>
+            <div class="component-text" style="margin-bottom:12px">Ajuste o ripple (ganho).</div>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Ripple: <span id="c2-ripple-val">0.3</span></label>
+            <input id="c2-ripple" type="range" min="0" max="1" step="0.05" value="0.3" style="width:280px">
+        </div>
+    </div>
+
+    <div class="component-page" id="page-Capacitor C3" role="dialog" aria-label="Capacitor C3">
+        <button class="power-back" data-action="back" aria-label="Voltar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="12"></line>
+                <path d="M7 13a5 5 0 1 0 10 0"></path>
+            </svg>
+        </button>
+        <div class="component-card">
+            <div class="component-title">Capacitor C3</div>
+            <div class="component-text" style="margin-bottom:12px">Ajuste o ripple (ganho).</div>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Ripple: <span id="c3-ripple-val">0.7</span></label>
+            <input id="c3-ripple" type="range" min="0" max="1" step="0.05" value="0.7" style="width:280px">
+        </div>
+    </div>
+
+    <script>
+        const LIMITE_TERMINAIS = 1964;
+        let contadorTerminais = 1;
+        let autoCriacaoAtiva = false;
+        let intervaloAutoCriacao;
+        let reproducaoEncerrada = false;
+
+        function criarNovosTerminais(terminalPai) {
+            if (reproducaoEncerrada) {
+                return;
+            }
+            const container = document.querySelector('.terminal-container');
+            
+            // Criar até 3 novos terminais, sem ultrapassar o limite
+            const restantes = Math.max(0, LIMITE_TERMINAIS - contadorTerminais);
+            const quantidade = Math.min(3, restantes);
+            for (let i = 0; i < quantidade; i++) {
+                contadorTerminais++;
+                const newX = Math.random() * (window.innerWidth - 20);
+                const newY = Math.random() * (window.innerHeight - 20);
+                const novoTerminal = document.createElement('div');
+                novoTerminal.className = 'terminal-aleatorio';
+                novoTerminal.style.left = newX + 'px';
+                novoTerminal.style.top = newY + 'px';
+                novoTerminal.onclick = (e) => criarNovosTerminais(e.target);
+                container.appendChild(novoTerminal);
+            }
+            
+            // Atualizar contador visual
+            document.getElementById('contador').textContent = `Terminais: ${contadorTerminais}`;
+            
+            // Verificar se atingiu o limite
+            if (contadorTerminais >= LIMITE_TERMINAIS) {
+                finalizarReproducao();
+                return;
+            }
+            
+            // Iniciar criação automática se ainda não estiver ativa
+            if (!autoCriacaoAtiva) {
+                iniciarAutoCriacao();
+            }
+            
+            console.log(`Terminal clicado! Criados 3 novos terminais. Total: ${contadorTerminais}`);
+        }
+
+        function iniciarAutoCriacao() {
+            autoCriacaoAtiva = true;
+            intervaloAutoCriacao = setInterval(() => {
+                if (reproducaoEncerrada || contadorTerminais >= LIMITE_TERMINAIS) {
+                    finalizarReproducao();
+                    return;
+                }
+                
+                const container = document.querySelector('.terminal-container');
+                
+                // Criar até 3 novos terminais automaticamente, respeitando o limite
+                const restantes = Math.max(0, LIMITE_TERMINAIS - contadorTerminais);
+                const quantidade = Math.min(3, restantes);
+                for (let i = 0; i < quantidade; i++) {
+                    contadorTerminais++;
+                    const newX = Math.random() * (window.innerWidth - 20);
+                    const newY = Math.random() * (window.innerHeight - 20);
+                    const novoTerminal = document.createElement('div');
+                    novoTerminal.className = 'terminal-aleatorio';
+                    novoTerminal.style.left = newX + 'px';
+                    novoTerminal.style.top = newY + 'px';
+                    novoTerminal.onclick = (e) => criarNovosTerminais(e.target);
+                    container.appendChild(novoTerminal);
+                }
+                
+                // Atualizar contador visual
+                document.getElementById('contador').textContent = `Terminais: ${contadorTerminais}`;
+                
+                // Verificar se atingiu o limite
+                if (contadorTerminais >= LIMITE_TERMINAIS) {
+                    finalizarReproducao();
+                }
+                
+                console.log(`Auto-criação: 3 novos terminais. Total: ${contadorTerminais}`);
+            }, 25); // 0,025 segundos = 25ms (10x mais rápido)
+        }
+
+        function finalizarReproducao() {
+            if (reproducaoEncerrada) return;
+            reproducaoEncerrada = true;
+            pararAutoCriacao();
+            // Congela contador no canto direito
+            const contadorEl = document.getElementById('contador');
+            if (contadorEl) {
+                contadorEl.textContent = `Terminais: ${LIMITE_TERMINAIS}`;
+            }
+            // Desabilita cliques em todos os terminais existentes
+            document.querySelectorAll('.terminal, .terminal-aleatorio').forEach(el => {
+                el.onclick = null;
+                el.style.pointerEvents = 'none';
+            });
+            // Redireciona
+            mostrarSegundaPagina();
+        }
+
+        function pararAutoCriacao() {
+            autoCriacaoAtiva = false;
+            if (intervaloAutoCriacao) {
+                clearInterval(intervaloAutoCriacao);
+                intervaloAutoCriacao = null;
+            }
+        }
+
+        function mostrarSegundaPagina() {
+            // Redireciona para a página dedicada da placa
+            window.location.href = 'placa.html';
+        }
+
+        // Inicializa interações da placa-mãe
+        function initMotherboard() {
+            const components = document.querySelectorAll('.motherboard .mb-component');
+            components.forEach((el) => {
+                el.addEventListener('click', () => handleComponentClick(el));
+                // Acessibilidade com teclado
+                el.setAttribute('tabindex', '0');
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleComponentClick(el);
+                    }
+                });
+            });
+        }
+
+        function handleComponentClick(el) {
+            const name = el.getAttribute('data-component') || 'Componente';
+            // Breve feedback visual
+            el.style.opacity = '0.7';
+            el.style.filter = 'drop-shadow(0 0 12px rgba(255,0,0,0.9))';
+            setTimeout(() => {
+                el.style.opacity = '';
+                el.style.filter = '';
+            }, 180);
+            console.log(`Componente clicado: ${name}`);
+            // Navegar para página do componente, exceto POWER que funciona como voltar
+            if (name === 'Power') {
+                navigateBack();
+            } else {
+                navigateToComponent(name);
+            }
+        }
+
+        function showToast(texto) {
+            const toast = document.createElement('div');
+            toast.textContent = texto;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '24px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.background = 'rgba(0,0,0,0.75)';
+            toast.style.border = '1px solid #ff2e2e';
+            toast.style.color = '#ffb3b3';
+            toast.style.padding = '10px 14px';
+            toast.style.borderRadius = '8px';
+            toast.style.boxShadow = '0 0 14px rgba(255,0,0,0.5)';
+            toast.style.font = "600 13px 'Courier New', monospace";
+            toast.style.zIndex = '3000';
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'opacity 250ms ease';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 260);
+            }, 900);
+        }
+
+        // Navegação simples (pilha)
+        const navStack = [];
+        function navigateToComponent(name) {
+            const pageId = `page-${name}`;
+            const page = document.getElementById(pageId);
+            const segundaPagina = document.getElementById('segundaPagina');
+            if (!page) {
+                showToast(`Página não encontrada: ${name}`);
+                return;
+            }
+            // Empilha origem: se estamos na motherboard, origem é 'motherboard'
+            navStack.push('motherboard');
+            // Esconde motherboard
+            segundaPagina.style.display = 'none';
+            // Mostra página
+            page.style.display = 'flex';
+            requestAnimationFrame(() => { page.style.opacity = '1'; });
+            // Ligar botões de voltar
+            wirePowerBack(page);
+        }
+
+        function navigateBack() {
+            const last = navStack.pop();
+            const segundaPagina = document.getElementById('segundaPagina');
+            if (!last) {
+                // Já estamos na motherboard: voltar para a primeira página
+                const pages = document.querySelectorAll('.component-page');
+                pages.forEach(p => { p.style.opacity = '0'; p.style.display = 'none'; });
+                segundaPagina.style.display = 'flex';
+                return;
+            }
+            // Oculta qualquer página aberta
+            const pages = document.querySelectorAll('.component-page');
+            pages.forEach(p => { p.style.opacity = '0'; p.style.display = 'none'; });
+            // Mostra motherboard
+            segundaPagina.style.display = 'flex';
+        }
+
+        function wirePowerBack(scope) {
+            const root = scope || document;
+            const buttons = root.querySelectorAll('.power-back');
+            buttons.forEach(btn => {
+                btn.onclick = () => navigateBack();
+                btn.onkeydown = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateBack(); }
+                };
+            });
+        }
+
+        // Estado e reatividade das páginas
+        const state = {
+            cpuClock: 3.2,
+            ramAEnabled: true,
+            ramACapacity: 8,
+            ramBEnabled: false,
+            ramBCapacity: 0,
+            pcieEnabled: true,
+            c1: 0.5,
+            c2: 0.3,
+            c3: 0.7,
+        };
+
+        function bindControls() {
+            // CPU
+            const cpuRange = document.getElementById('cpu-clock');
+            const cpuVal = document.getElementById('cpu-clock-val');
+            if (cpuRange && cpuVal) {
+                const update = () => {
+                    state.cpuClock = parseFloat(cpuRange.value);
+                    cpuVal.textContent = state.cpuClock.toFixed(1);
+                    // brilho proporcional
+                    const cpu = document.getElementById('mb-CPU');
+                    const intensity = Math.min(1, (state.cpuClock - 1) / 4 + 0.2);
+                    if (cpu) cpu.style.filter = `drop-shadow(0 0 ${8 + intensity * 12}px rgba(255,0,0,${0.3 + intensity * 0.6}))`;
+                };
+                cpuRange.addEventListener('input', update);
+                update();
+            }
+
+            // RAM A
+            const ramAEnabled = document.getElementById('ramA-enabled');
+            const ramACap = document.getElementById('ramA-capacity');
+            const ramACapVal = document.getElementById('ramA-capacity-val');
+            if (ramAEnabled && ramACap && ramACapVal) {
+                const update = () => {
+                    state.ramAEnabled = ramAEnabled.checked;
+                    state.ramACapacity = parseInt(ramACap.value, 10);
+                    ramACapVal.textContent = String(state.ramACapacity);
+                    const ramA = document.getElementById('mb-RAM A');
+                    if (ramA) {
+                        ramA.style.opacity = state.ramAEnabled ? '1' : '0.35';
+                        ramA.style.filter = state.ramAEnabled ? 'drop-shadow(0 0 10px rgba(53,255,86,0.6))' : 'none';
+                    }
+                };
+                ramAEnabled.addEventListener('change', update);
+                ramACap.addEventListener('input', update);
+                update();
+            }
+
+            // RAM B
+            const ramBEnabled = document.getElementById('ramB-enabled');
+            const ramBCap = document.getElementById('ramB-capacity');
+            const ramBCapVal = document.getElementById('ramB-capacity-val');
+            if (ramBEnabled && ramBCap && ramBCapVal) {
+                const update = () => {
+                    state.ramBEnabled = ramBEnabled.checked && parseInt(ramBCap.value, 10) > 0;
+                    state.ramBCapacity = parseInt(ramBCap.value, 10);
+                    ramBCapVal.textContent = String(state.ramBCapacity);
+                    const ramB = document.getElementById('mb-RAM B');
+                    if (ramB) {
+                        ramB.style.opacity = state.ramBEnabled ? '1' : '0.35';
+                        ramB.style.filter = state.ramBEnabled ? 'drop-shadow(0 0 10px rgba(53,255,86,0.6))' : 'none';
+                    }
+                };
+                ramBEnabled.addEventListener('change', update);
+                ramBCap.addEventListener('input', update);
+                update();
+            }
+
+            // PCIe
+            const pcieEnabled = document.getElementById('pcie-enabled');
+            if (pcieEnabled) {
+                const update = () => {
+                    state.pcieEnabled = pcieEnabled.checked;
+                    const pcie = document.getElementById('mb-PCIe x16');
+                    if (pcie) {
+                        pcie.style.opacity = state.pcieEnabled ? '1' : '0.35';
+                        pcie.style.filter = state.pcieEnabled ? 'drop-shadow(0 0 10px rgba(155,123,255,0.6))' : 'none';
+                    }
+                };
+                pcieEnabled.addEventListener('change', update);
+                update();
+            }
+
+            // Capacitores
+            const bindCap = (id, valId, mbId, key) => {
+                const slider = document.getElementById(id);
+                const label = document.getElementById(valId);
+                if (slider && label) {
+                    const update = () => {
+                        state[key] = parseFloat(slider.value);
+                        label.textContent = slider.value;
+                        const mb = document.getElementById(mbId);
+                        if (mb) mb.style.filter = `drop-shadow(0 0 ${4 + state[key]*14}px rgba(255,0,0,${0.2 + state[key]*0.7}))`;
+                    };
+                    slider.addEventListener('input', update);
+                    update();
+                }
+            };
+            bindCap('c1-ripple', 'c1-ripple-val', 'mb-Capacitor C1', 'c1');
+            bindCap('c2-ripple', 'c2-ripple-val', 'mb-Capacitor C2', 'c2');
+            bindCap('c3-ripple', 'c3-ripple-val', 'mb-Capacitor C3', 'c3');
+        }
+
+        // Bind ao carregar a segunda página
+        document.addEventListener('DOMContentLoaded', () => {
+            wirePowerBack(document);
+        });
+    </script>
+</body>
+</html>

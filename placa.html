@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placa-mãe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        .cyberpunk-bg, .neon-grid, .rain-effect { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+        .cyberpunk-bg {
+            background: radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+        .neon-grid {
+            background-image: linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .rain-effect { background: linear-gradient(transparent 0%, rgba(0, 255, 255, 0.03) 100%); animation: rain 2s linear infinite; }
+        @keyframes rain { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+
+        .motherboard {
+            width: min(90vw, 820px);
+            aspect-ratio: 16/10;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255,0,0,0.08), transparent 40%),
+                        radial-gradient(ellipse at 80% 70%, rgba(255,0,0,0.06), transparent 45%),
+                        #0a0f12;
+            border: 2px solid rgba(255, 0, 0, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.15);
+            padding: 14px;
+        }
+        svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 6px rgba(255,0,0,0.25)); }
+        .mb-track { stroke: #1dffb5; stroke-opacity: 0.55; stroke-width: 2; fill: none; filter: drop-shadow(0 0 4px rgba(29,255,181,0.35)); }
+        .mb-component { cursor: pointer; transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease; }
+        .mb-component:hover { transform: translateY(-2px) scale(1.02); filter: drop-shadow(0 0 10px rgba(255,0,0,0.6)); }
+        .mb-label { font: 600 12px 'Courier New', monospace; fill: #ffb3b3; text-shadow: 0 0 6px rgba(255,0,0,0.6); pointer-events: none; }
+        .mb-chip { fill: #1a1f27; stroke: #ff3b3b; stroke-width: 2; }
+        .mb-ram { fill: #142018; stroke: #35ff56; stroke-width: 2; }
+        .mb-slot { fill: #14141f; stroke: #9b7bff; stroke-width: 2; }
+        .mb-cap  { fill: #241616; stroke: #ff6b6b; stroke-width: 1.5; }
+        .mb-power { fill: #7a0b0b; stroke: #ff0000; stroke-width: 3; }
+        .mb-user { fill: #14141f; stroke: #ff9b3b; stroke-width: 2; }
+
+        .power-back {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            width: 46px; height: 46px; border-radius: 50%; border: 2px solid #ff0000;
+            background: #190a0a; box-shadow: 0 0 16px rgba(255,0,0,0.5), inset 0 0 10px rgba(255,0,0,0.25);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.18s ease, box-shadow 0.18s ease; z-index: 10;
+        }
+        .power-back:hover { transform: scale(1.06); box-shadow: 0 0 22px rgba(255,0,0,0.8), inset 0 0 12px rgba(255,0,0,0.3); }
+        .power-back:active { transform: scale(0.98); }
+        .hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); color: #ffb3b3; text-shadow: 0 0 6px rgba(255,0,0,0.4); font: 600 13px 'Courier New', monospace; }
+    </style>
+</head>
+<body>
+    <div class="cyberpunk-bg"></div>
+    <div class="neon-grid"></div>
+    <div class="rain-effect"></div>
+
+    <button class="power-back" aria-label="Voltar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="12"></line>
+            <path d="M7 13a5 5 0 1 0 10 0"></path>
+        </svg>
+    </button>
+
+    <div class="motherboard" aria-label="Placa-mãe interativa">
+        <svg viewBox="0 0 820 512" preserveAspectRatio="xMidYMid meet">
+            <!-- Trilhas: todas conectam componentes -->
+            <path class="mb-track" d="M240 133 H280 V210 H300"/>
+            <path class="mb-track" d="M240 173 H280 V270 H300"/>
+            <path class="mb-track" d="M450 230 H490 V337 H520"/>
+            <path class="mb-track" d="M450 270 H500 V337 H520"/>
+            <path class="mb-track" d="M450 210 H550"/>
+            <path class="mb-track" d="M450 220 H578 V210"/>
+            <path class="mb-track" d="M450 240 H606 V210"/>
+            <path class="mb-track" d="M120 380 V300 H300"/>
+            <path class="mb-track" d="M120 380 H240 V173"/>
+            <path class="mb-track" d="M760 337 H640 V380 H120"/>
+            <!-- USER connection lines to CPU -->
+            <path class="mb-track" d="M450 250 H580 V140 H720"/>
+            <path class="mb-track" d="M450 260 H570 V150 H720"/>
+            <path class="mb-track" d="M450 270 H560 V160 H720"/>
+
+            <!-- CPU -->
+            <g class="mb-component" id="mb-CPU" data-component="CPU">
+                <rect class="mb-chip" x="300" y="180" width="150" height="120" rx="10"/>
+                <g fill="#ff5c5c" opacity="0.9">
+                    <circle cx="315" cy="195" r="3"/><circle cx="335" cy="195" r="3"/><circle cx="355" cy="195" r="3"/><circle cx="375" cy="195" r="3"/>
+                    <circle cx="395" cy="195" r="3"/><circle cx="415" cy="195" r="3"/>
+                    <circle cx="315" cy="295" r="3"/><circle cx="335" cy="295" r="3"/><circle cx="355" cy="295" r="3"/><circle cx="375" cy="295" r="3"/>
+                    <circle cx="395" cy="295" r="3"/><circle cx="415" cy="295" r="3"/>
+                </g>
+                <text class="mb-label" x="375" y="245" text-anchor="middle">CPU</text>
+            </g>
+
+            <!-- RAM -->
+            <g class="mb-component" id="mb-RAM A" data-component="RAM A">
+                <rect class="mb-ram" x="80" y="120" width="160" height="26" rx="5"/>
+                <text class="mb-label" x="160" y="138" text-anchor="middle">RAM A</text>
+            </g>
+            <g class="mb-component" id="mb-RAM B" data-component="RAM B">
+                <rect class="mb-ram" x="80" y="160" width="160" height="26" rx="5"/>
+                <text class="mb-label" x="160" y="178" text-anchor="middle">RAM B</text>
+            </g>
+
+            <!-- PCIe -->
+            <g class="mb-component" id="mb-PCIe x16" data-component="memória">
+                <rect class="mb-slot" x="520" y="320" width="240" height="34" rx="6"/>
+                <text class="mb-label" x="640" y="342" text-anchor="middle">memória</text>
+            </g>
+
+            <!-- USER Button -->
+            <g class="mb-component" id="mb-USER" data-component="user" aria-label="Botão USER">
+                <rect class="mb-user" x="720" y="120" width="70" height="40" rx="8"/>
+                <text class="mb-label" x="755" y="145" text-anchor="middle">user</text>
+            </g>
+
+            <!-- Capacitores -->
+            <g class="mb-component" id="mb-Capacitor C1" data-component="Capacitor C1"><circle class="mb-cap" cx="540" cy="210" r="10"/></g>
+            <g class="mb-component" id="mb-Capacitor C2" data-component="Capacitor C2"><circle class="mb-cap" cx="570" cy="210" r="8"/></g>
+            <g class="mb-component" id="mb-Capacitor C3" data-component="Capacitor C3"><circle class="mb-cap" cx="600" cy="210" r="6"/></g>
+
+            <!-- POWER -->
+            <g class="mb-component" id="mb-POWER" data-component="Power" aria-label="Botão de energia">
+                <circle class="mb-power" cx="120" cy="380" r="26"/>
+                <path d="M120 360 v18" stroke="#ffcccc" stroke-width="4" stroke-linecap="round"/>
+                <path d="M105 386 a15 15 0 1 0 30 0" fill="none" stroke="#ffcccc" stroke-width="4" stroke-linecap="round"/>
+                <text class="mb-label" x="120" y="420" text-anchor="middle">POWER</text>
+            </g>
+        </svg>
+    </div>
+
+    <div class="hint">Clique nos componentes. POWER volta.</div>
+
+    <script>
+        const back = () => { if (document.referrer) { history.back(); } else { window.location.href = 'terminal-simples.html'; } };
+        const power = document.getElementById('mb-POWER');
+        document.querySelector('.power-back').addEventListener('click', back);
+        document.querySelector('.power-back').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); back(); } });
+        if (power) { power.addEventListener('click', back); }
+
+        function handleNavigate(el) {
+            const name = el.getAttribute('data-component');
+            if (name === 'CPU') {
+                window.location.href = 'cpu.html';
+            } else if (name === 'memória') {
+                window.location.href = 'https://www.nyan.cat/';
+            } else if (name === 'user') {
+                window.open('docs.html', '_blank');
+            } else if (name === 'RAM A') {
+                window.location.href = 'ram-a.html';
+            } else if (name === 'RAM B') {
+                window.location.href = 'ram-b.html';
+            } else {
+                alert(`${name} selecionado`);
+            }
+        }
+        document.querySelectorAll('.mb-component').forEach(el => {
+            if (el.id !== 'mb-POWER' && !el.id.startsWith('mb-Capacitor')) {
+                el.addEventListener('click', () => handleNavigate(el));
+                el.setAttribute('tabindex', '0');
+                el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNavigate(el); } });
+            }
+        });
+
+        // Temas neon controlados pelos capacitores
+        const themes = {
+            c1: { primary: '#ff3b3b', accent: '#ffb3b3', track: '#ff3bd4' },
+            c2: { primary: '#35ff86', accent: '#b3fff0', track: '#1dffb5' },
+            c3: { primary: '#9b7bff', accent: '#c9c0ff', track: '#6bb7ff' },
+        };
+
+        function applyTheme(themeKey) {
+            const t = themes[themeKey];
+            if (!t) return;
+            // Trilhas
+            document.querySelectorAll('.mb-track').forEach(p => p.setAttribute('stroke', t.track));
+            // Labels
+            document.querySelectorAll('.mb-label').forEach(l => l.setAttribute('fill', t.accent));
+            // CPU
+            const cpuChip = document.querySelector('#mb-CPU .mb-chip');
+            if (cpuChip) cpuChip.setAttribute('stroke', t.primary);
+            // RAM
+            document.querySelectorAll('.mb-ram').forEach(r => r.setAttribute('stroke', t.primary));
+            // PCIe
+            const pcie = document.querySelector('#mb-PCIe x16 .mb-slot');
+            // querySelector with space in id is tricky; select by id then child
+            const pcieGroup = document.getElementById('mb-PCIe x16');
+            if (pcieGroup) {
+                const slot = pcieGroup.querySelector('.mb-slot');
+                if (slot) slot.setAttribute('stroke', t.primary);
+            }
+            // POWER
+            const powerCircle = document.querySelector('#mb-POWER .mb-power');
+            if (powerCircle) powerCircle.setAttribute('stroke', t.primary);
+            // USER
+            const userRect = document.querySelector('#mb-USER .mb-user');
+            if (userRect) userRect.setAttribute('stroke', t.primary);
+        }
+
+        // Clique nos capacitores recolore os demais elementos
+        const cap1 = document.getElementById('mb-Capacitor C1');
+        const cap2 = document.getElementById('mb-Capacitor C2');
+        const cap3 = document.getElementById('mb-Capacitor C3');
+        if (cap1) cap1.addEventListener('click', () => applyTheme('c1'));
+        if (cap2) cap2.addEventListener('click', () => applyTheme('c2'));
+        if (cap3) cap3.addEventListener('click', () => applyTheme('c3'));
+    </script>
+</body>
+</html>
+
+

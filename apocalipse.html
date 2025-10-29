@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apocalipse</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: grid;
+            place-items: center;
+        }
+        .fullscreen-img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            object-position: center;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        .hint {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            color: rgba(255,255,255,0.7);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="fractal" class="fullscreen-img"></canvas>
+    <script>
+        const canvas = document.getElementById('fractal');
+        const ctx = canvas.getContext('2d');
+        function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+        addEventListener('resize', resize); resize();
+
+        function renderFractal(){
+            const w = canvas.width, h = canvas.height;
+            const img = ctx.createImageData(w, h);
+            const data = img.data;
+            const cx = w / 2, cy = h / 2;
+            const scale = 1 / Math.max(w, h) * 3.2;
+            for(let y = 0; y < h; y++){
+                for(let x = 0; x < w; x++){
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    const r = Math.hypot(dx, dy);
+                    const a = Math.atan2(dy, dx);
+                    const t = Math.sin(a * 6 + r * scale * 60) * 0.5 + 0.5;
+                    const u = Math.cos(a * 3 - r * scale * 40) * 0.5 + 0.5;
+                    const v = Math.sin(r * scale * 20 - a * 4) * 0.5 + 0.5;
+                    const i = (y * w + x) * 4;
+                    data[i + 0] = Math.floor(255 * (t * 0.9 + v * 0.3));
+                    data[i + 1] = Math.floor(255 * (u * 0.7));
+                    data[i + 2] = Math.floor(255 * (1.0 - t * 0.6 + u * 0.2));
+                    data[i + 3] = 255;
+                }
+            }
+            ctx.putImageData(img, 0, 0);
+        }
+
+        let tick = 0;
+        function animate(){
+            tick += 0.04;
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(tick * 0.02);
+            ctx.translate(-canvas.width/2, -canvas.height/2);
+            renderFractal();
+            ctx.restore();
+            requestAnimationFrame(animate);
+        }
+        renderFractal();
+        requestAnimationFrame(animate);
+
+        setTimeout(() => { window.location.href = 'codigos.html'; }, 45000);
+    </script>
+</body>
+</html>
+
+

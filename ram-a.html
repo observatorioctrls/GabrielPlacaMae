@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAM A</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; }
+        body { position: relative; overflow: hidden; font-family: 'Arial', sans-serif; }
+        .map-bg {
+            position: fixed; inset: 0;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg') center/cover no-repeat;
+            filter: contrast(1.05) saturate(1.05);
+            z-index: -2;
+        }
+        .overlay { position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 20%, rgba(255,0,0,0.08), transparent 40%), radial-gradient(ellipse at 80% 70%, rgba(255,0,0,0.06), transparent 45%); z-index: -1; }
+        .poems {
+            position: relative; width: 100%; height: 100%; display: grid; place-items: center; padding: 24px;
+        }
+        .poem-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); width: min(1100px, 94vw); }
+        .poem { background: rgba(255,255,255,0.9); border-radius: 12px; padding: 16px 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); border: 1px solid rgba(0,0,0,0.08); }
+        .poem h4 { font-family: 'Times New Roman', Times, serif; margin-bottom: 8px; font-size: 20px; color: #222; }
+        .poem p { font-family: 'Times New Roman', Times, serif; font-size: 17px; line-height: 1.6; color: #111; }
+        .label { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); color: #ffb3b3; text-shadow: 0 0 10px #ff0000; font: 900 24px 'Courier New', monospace; letter-spacing: 2px; }
+        .back { position: fixed; top: 18px; left: 18px; background: #190a0a; color: #ffcccc; border: 2px solid #ff0000; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-family: 'Courier New', monospace; }
+        /* Hotspots clicáveis por país (posições aproximadas no mapa mercator) */
+        .hotspots { position: fixed; inset: 0; pointer-events: none; }
+        .hotspot { position: absolute; pointer-events: auto; cursor: pointer; border-radius: 12px; outline: none; -webkit-tap-highlight-color: transparent; }
+        .hotspot:focus { outline: none; }
+        /* Brasil */
+        .hs-br { left: 32%; top: 58%; width: 10%; height: 12%; }
+        /* China */
+        .hs-cn { left: 66%; top: 42%; width: 12%; height: 10%; }
+        /* Rússia */
+        .hs-ru { left: 60%; top: 22%; width: 20%; height: 10%; }
+        /* Índia */
+        .hs-in { left: 62%; top: 52%; width: 8%; height: 8%; }
+        /* África do Sul */
+        .hs-za { left: 52%; top: 75%; width: 8%; height: 8%; }
+        @media (max-width: 768px) {
+            .poem p { font-size: 16px; }
+            .poem h4 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="map-bg"></div>
+    <div class="overlay"></div>
+    <div class="label">RAM A — Poesias Aleatórias</div>
+    <button class="back" onclick="goBack()">POWER</button>
+    <div class="poems">
+        <div class="poem-grid" id="poemGrid"></div>
+    </div>
+
+    <div class="hotspots" aria-label="Países clicáveis">
+        <a class="hotspot hs-br" href="placa.html" title="Brasil" aria-label="Brasil"></a>
+        <a class="hotspot hs-cn" href="https://brics.br/pt-br" title="China" aria-label="China" target="_blank" rel="noopener noreferrer"></a>
+        <a class="hotspot hs-ru" href="https://www.instagram.com/wladimir_putin_/" title="Rússia" aria-label="Rússia" target="_blank" rel="noopener noreferrer"></a>
+        <a class="hotspot hs-in" href="https://www.felipeopequenoviajante.com/2010/06/fronteira-da-india-com-o-nepal-nada-e.html" title="Índia" aria-label="Índia" target="_blank" rel="noopener noreferrer"></a>
+        <a class="hotspot hs-za" href="https://www.nytimes.com/2025/05/30/us/elon-musk-drugs-children-trump.html" title="África do Sul" aria-label="África do Sul" target="_blank" rel="noopener noreferrer"></a>
+    </div>
+
+    <script>
+        function goBack(){ if (document.referrer) { history.back(); } else { window.location.href = 'placa.html'; } }
+        // Contador de atualizações: ao atingir 5, redireciona para cpu.html
+        (function(){
+            const KEY = 'ramARefreshCount';
+            const current = parseInt(localStorage.getItem(KEY) || '0', 10) || 0;
+            const next = current + 1;
+            if (next >= 5) {
+                localStorage.removeItem(KEY);
+                window.location.href = 'cpu.html';
+                return;
+            }
+            localStorage.setItem(KEY, String(next));
+        })();
+        // Gerador simples de poesias aleatórias
+        const titles = ['Canto Rubro', 'Sopro do Sul', 'Neon e Brisa', 'Circuitos do Mar', 'Mapa das Horas'];
+        const linesA = ['No vão da noite', 'Sob o farol tímido', 'Entre ruídos antigos', 'No cobre das nuvens', 'No azul que range'];
+        const linesB = ['um pulso acende', 'um verso entende', 'um passo aprende', 'um fio se estende', 'um tempo se rende'];
+        const linesC = ['a pele do mundo', 'as rotas do vento', 'as chaves do agora', 'os nomes do pó', 'os mapas do longe'];
+        const linesD = ['e repousa', 'e desponta', 'e dança', 'e chama', 'e atravessa'];
+        const linesE = ['como quem volta', 'como quem busca', 'como quem canta', 'como quem pensa', 'como quem sonha'];
+
+        function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+        function compose(){
+            return [pick(linesA), pick(linesB), pick(linesC), pick(linesD), pick(linesE)];
+        }
+        function buildPoem(){
+            const h = document.createElement('div');
+            h.className = 'poem';
+            const title = document.createElement('h4');
+            title.textContent = pick(titles);
+            h.appendChild(title);
+            const stanza = compose();
+            stanza.forEach(l => {
+                const p = document.createElement('p');
+                p.textContent = l;
+                h.appendChild(p);
+            });
+            return h;
+        }
+        const grid = document.getElementById('poemGrid');
+        for (let i=0;i<4;i++){ grid.appendChild(buildPoem()); }
+    </script>
+</body>
+</html>
+
+

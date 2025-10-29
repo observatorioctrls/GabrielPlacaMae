@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navegar</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Arial', sans-serif; position: relative; overflow: hidden;
+        }
+        .cyberpunk-bg, .neon-grid, .rain-effect { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+        .cyberpunk-bg { background: radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.05) 0%, transparent 50%); }
+        .neon-grid { background-image: linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px); background-size: 50px 50px; }
+        .rain-effect { background: linear-gradient(transparent 0%, rgba(0, 255, 255, 0.03) 100%); animation: rain 2s linear infinite; }
+        @keyframes rain { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+
+        .search-box { width: min(680px, 92vw); display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .logo { font-family: 'Courier New', monospace; font-weight: 900; font-size: 42px; letter-spacing: 2px; color: #ff6b6b; text-shadow: 0 0 10px #ff0000, 0 0 20px #ff3b3b, 0 0 40px #ff6b6b; }
+        .input-wrap { display: flex; gap: 10px; width: 100%; }
+        .input { flex: 1; padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,0,0,0.4); background: rgba(10,10,10,0.6); color: #ffd6d6; outline: none; box-shadow: inset 0 0 10px rgba(255,0,0,0.15), 0 0 14px rgba(255,0,0,0.25); }
+        .btn { padding: 14px 18px; border-radius: 12px; border: 2px solid rgba(255,0,0,0.4); background: rgba(10,10,10,0.6); color: #ffd6d6; cursor: pointer; font: 700 14px 'Courier New', monospace; box-shadow: 0 0 16px rgba(255,0,0,0.35), inset 0 0 10px rgba(255,0,0,0.15); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 0 22px rgba(255,0,0,0.7), inset 0 0 12px rgba(255,0,0,0.25); }
+        .hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); color: #ffb3b3; text-shadow: 0 0 6px rgba(255,0,0,0.4); font: 600 13px 'Courier New', monospace; }
+        .back { position: fixed; top: 18px; left: 18px; background: #190a0a; color: #ffcccc; border: 2px solid #ff0000; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-family: 'Courier New', monospace; }
+        .answers { width: min(680px, 92vw); margin-top: 14px; display: grid; gap: 12px; }
+        .answer { padding: 14px 16px; border-radius: 12px; border: 2px solid rgba(255,0,0,0.35); background: rgba(10,10,10,0.6); color: #ffd6d6; font-family: 'Courier New', monospace; box-shadow: 0 0 16px rgba(255,0,0,0.35), inset 0 0 10px rgba(255,0,0,0.15); }
+        .tone { font-weight: 900; letter-spacing: 1px; margin-bottom: 6px; display: inline-block; }
+        .tone.sarcastico { color: #ff6b6b; text-shadow: 0 0 10px #ff0000; }
+        .tone.gentil { color: #6bff8c; text-shadow: 0 0 10px #19ff64; }
+        .tone.verbete { color: #6bb7ff; text-shadow: 0 0 10px #198cff; }
+
+        /* Google Custom Search results */
+        .gcs-controls { width: min(680px, 92vw); display: grid; gap: 8px; margin-top: 10px; }
+        .gcs-controls input { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,0,0,0.25); background: rgba(10,10,10,0.45); color: #ffd6d6; font-family: 'Courier New', monospace; }
+        .gcs-note { color: #ffb3b3; font: 600 12px 'Courier New', monospace; opacity: 0.9; }
+        .gcs-results { width: min(680px, 92vw); margin-top: 14px; display: grid; gap: 12px; }
+        .gcs-item { padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,0,0,0.25); background: rgba(10,10,10,0.5); color: #ffb3b3; font-family: 'Courier New', monospace; box-shadow: inset 0 0 10px rgba(255,0,0,0.1); }
+        .gcs-item a { color: #ffd6d6; text-decoration: none; font-weight: 700; }
+        .gcs-item a:hover { text-decoration: underline; }
+        .gcs-link { color: #ff8080; font-size: 12px; margin-top: 4px; }
+        .gcs-snippet { margin-top: 6px; color: #ffcccc; }
+    </style>
+</head>
+<body>
+    <div class="cyberpunk-bg"></div>
+    <div class="neon-grid"></div>
+    <div class="rain-effect"></div>
+
+    <button class="back" onclick="goBack()">POWER</button>
+
+    <div class="search-box">
+        <div class="logo">NEO-SEARCH</div>
+        <div class="input-wrap">
+            <input class="input" id="q" placeholder="O que deseja encontrar?" />
+            <button class="btn" id="go">Buscar</button>
+        </div>
+        <div class="answers" id="answers"></div>
+        <div class="gcs-controls">
+            <input id="gcs-key" placeholder="GOOGLE_API_KEY" />
+            <input id="gcs-cx" placeholder="GOOGLE_CX (Custom Search Engine ID)" />
+            <div class="gcs-note">Cole sua API key e CX para trazer resultados reais do Google Custom Search.</div>
+        </div>
+        <div class="gcs-results" id="gcs-results"></div>
+    </div>
+    <div class="hint">Interface de busca fictícia com estilo neon</div>
+
+    <script>
+        function goBack(){ if (document.referrer) { history.back(); } else { window.location.href = 'cpu.html'; } }
+        const input = document.getElementById('q');
+        const go = document.getElementById('go');
+        const answers = document.getElementById('answers');
+        const gcsKeyEl = document.getElementById('gcs-key');
+        const gcsCxEl = document.getElementById('gcs-cx');
+        const gcsResultsEl = document.getElementById('gcs-results');
+        function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+        function hashString(s){
+            let h = 2166136261;
+            for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); }
+            return Math.abs(h >>> 0);
+        }
+        const lastUsed = { sarcastic: -1, gentle: -1, verbete: -1, lastTerm: '' };
+        function pickDifferent(preferredIndex, len, lastIndex){
+            if (len <= 1) return 0;
+            if (preferredIndex === lastIndex) return (preferredIndex + 1) % len;
+            return preferredIndex % len;
+        }
+        function search(){
+            const q = input.value.trim();
+            answers.innerHTML = '';
+            if(!q){ return; }
+
+            // Três caixas de resposta: sarcástico, gentil, verbete
+            const mk = (titleClass, titleText, bodyText) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'answer';
+                const tone = document.createElement('div');
+                tone.className = `tone ${titleClass}`;
+                tone.textContent = titleText;
+                const body = document.createElement('div');
+                body.textContent = bodyText;
+                wrap.appendChild(tone);
+                wrap.appendChild(body);
+                return wrap;
+            };
+
+            const term = q;
+            const hour = new Date().getHours();
+            const emojisSarcasmo = ['🙃','😏','🫠','🤨'];
+            const emojisGentil = ['😊','🌟','🤝','💫'];
+            const emojisVerbete = ['📖','🧠','🔎','📚'];
+
+            const sarcasticTemplates = [
+                t => `Ah, ${t}? Justo o que o universo precisava às ${hour}h ${rand(emojisSarcasmo)}`,
+                t => `Pesquisa ousada: "${t}". Próximo passo: dominar o mundo? ${rand(emojisSarcasmo)}`,
+                t => `Interessante. E por "interessante" quero dizer: claro que sim ${rand(emojisSarcasmo)}`,
+                t => `"${t}"? Com certeza. Isso e uma pizza fria definem produtividade.`
+            ];
+            const gentleTemplates = [
+                t => `Adorei sua curiosidade sobre "${t}". Vamos explorar juntos ${rand(emojisGentil)}`,
+                t => `Entendi seu objetivo com "${t}". Posso guiar você com calma ${rand(emojisGentil)}`,
+                t => `Obrigado por compartilhar "${t}". Vou elaborar uma resposta clara ${rand(emojisGentil)}`,
+                t => `Ótima escolha: "${t}". Já estou preparando algo útil para você ${rand(emojisGentil)}`
+            ];
+            const verbeteTemplates = [
+                t => `${t}: termo/expressão. Uso: contexto comum e objetivo. Notas: nuances e variações ${rand(emojisVerbete)}`,
+                t => `${t}: definição sintética; função semântica; exemplos de aplicação ${rand(emojisVerbete)}`,
+                t => `${t}: conceito-chave; relações com temas adjacentes; sinônimos e contrapontos ${rand(emojisVerbete)}`,
+                t => `${t}: descrição breve salientando significado, uso típico e relevância prática ${rand(emojisVerbete)}`
+            ];
+
+            const base = hashString(term || String(Date.now()));
+            const sIdx = pickDifferent((base + 1) % sarcasticTemplates.length, sarcasticTemplates.length, term === lastUsed.lastTerm ? lastUsed.sarcastic : -1);
+            const gIdx = pickDifferent((base * 7 + 3) % gentleTemplates.length, gentleTemplates.length, term === lastUsed.lastTerm ? lastUsed.gentle : -1);
+            const vIdx = pickDifferent((base * 13 + 5) % verbeteTemplates.length, verbeteTemplates.length, term === lastUsed.lastTerm ? lastUsed.verbete : -1);
+
+            const sarcastic = sarcasticTemplates[sIdx](term);
+            const gentle = gentleTemplates[gIdx](term);
+            const verbete = verbeteTemplates[vIdx](term);
+
+            lastUsed.sarcastic = sIdx;
+            lastUsed.gentle = gIdx;
+            lastUsed.verbete = vIdx;
+            lastUsed.lastTerm = term;
+
+            answers.appendChild(mk('sarcastico', 'Sarcástico', sarcastic));
+            answers.appendChild(mk('gentil', 'Gentil', gentle));
+            answers.appendChild(mk('verbete', 'Verbete', verbete));
+            // Se API e CX estiverem fornecidos, consulta o Google Custom Search
+            const apiKey = (gcsKeyEl && gcsKeyEl.value.trim()) || '';
+            const cx = (gcsCxEl && gcsCxEl.value.trim()) || '';
+            gcsResultsEl.innerHTML = '';
+            if (apiKey && cx) {
+                fetch(`https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(apiKey)}&cx=${encodeURIComponent(cx)}&q=${encodeURIComponent(q)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.items && Array.isArray(data.items)) {
+                            data.items.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'gcs-item';
+                                const link = document.createElement('a');
+                                link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer';
+                                link.textContent = item.title || item.link;
+                                const cite = document.createElement('div'); cite.className = 'gcs-link'; cite.textContent = item.link;
+                                const snip = document.createElement('div'); snip.className = 'gcs-snippet'; snip.textContent = item.snippet || '';
+                                div.appendChild(link); div.appendChild(cite); div.appendChild(snip);
+                                gcsResultsEl.appendChild(div);
+                            });
+                        } else {
+                            gcsResultsEl.innerHTML = '<div class="gcs-item">Nenhum resultado encontrado.</div>';
+                        }
+                    })
+                    .catch(() => { gcsResultsEl.innerHTML = '<div class="gcs-item">Erro ao consultar a API do Google.</div>'; });
+            }
+        }
+        go.addEventListener('click', search);
+        input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ search(); } });
+    </script>
+</body>
+</html>
+
+

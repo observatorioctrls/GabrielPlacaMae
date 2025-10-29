@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Códigos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            background: #0b0b0c;
+            color: #e2e8f0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            line-height: 1.6;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: 1fr;
+        }
+        #terminal {
+            padding: 16px;
+            white-space: pre-wrap;
+            overflow: auto;
+        }
+        .caret { color: #22d3ee; }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const intervalMs = 250; // 0.25s por palavra
+
+        const infernoWords = [
+            // Conceitos gerais
+            'abismo','penumbra','chama','enxofre','labareda','crepitar','condenação','tormento','penitência','eterno',
+            'círculo','vórtice','garganta','antecâmara','ruína','abissal','trevas','eco','lamento','agonia',
+            // Personagens/figuras
+            'caronte','minos','cérbero','fúrias','medusa','harpias','minotauro','centauros','gigantes','úcubar',
+            // Locais/elementos
+            'estige','flegetonte','cócito','dis','malebolge','geena','tártaro','limbo','sepulcros','paredões',
+            // Vocabulário técnico/"de código" para estética
+            'const','void','invoke','daemon','process','fork','trap','segfault','stack','overflow',
+            'while(','for(','goto','label:','try','catch','throw','return','break','continue',
+            // Ações/sensações
+            'gritar','cair','arder','suplicar','congelar','vergar','ranger','uivar','tremor','vertigem',
+            // Símbolos/objetos
+            'corrente','portão','runas','círio','tridente','coroa','cinza','sombra','abóbada','coluna'
+        ];
+
+        function randomWord(){
+            return infernoWords[Math.floor(Math.random() * infernoWords.length)];
+        }
+
+        function appendWord(){
+            const word = randomWord();
+            const needsNewline = Math.random() < 0.1;
+            terminal.textContent += needsNewline ? (word + "\n") : (word + ' ');
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        appendWord();
+        const timer = setInterval(appendWord, intervalMs);
+        setTimeout(() => { clearInterval(timer); window.location.href = 'terminal-simples.html'; }, 60000);
+    </script>
+</body>
+</html>
+

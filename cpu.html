@@ -1,0 +1,250 @@
+es<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            position: relative;
+            color: #ffb3b3;
+        }
+        .cyberpunk-bg, .neon-grid, .rain-effect { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-1; }
+        .cyberpunk-bg {
+            background: radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.05) 0%, transparent 50%);
+        }
+        .neon-grid {
+            background-image: linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .rain-effect { background: linear-gradient(transparent 0%, rgba(0, 255, 255, 0.03) 100%); animation: rain 2s linear infinite; }
+        @keyframes rain { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+
+        .power-back {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid #ff0000;
+            background: #190a0a;
+            box-shadow: 0 0 16px rgba(255,0,0,0.5), inset 0 0 10px rgba(255,0,0,0.25);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            z-index: 10;
+        }
+        .power-back:hover { transform: scale(1.06); box-shadow: 0 0 22px rgba(255,0,0,0.8), inset 0 0 12px rgba(255,0,0,0.3); }
+        .power-back:active { transform: scale(0.98); }
+
+        .cpu-wrapper {
+            display: flex; flex-direction: column; align-items: center; gap: 22px;
+        }
+        .motherboard-mini {
+            width: min(90vw, 640px);
+            aspect-ratio: 16/10;
+            background: #0a0f12;
+            border: 2px solid rgba(255, 0, 0, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.15);
+            padding: 14px;
+        }
+        .mb-label { font: 600 12px 'Courier New', monospace; fill: #ffb3b3; pointer-events: none; }
+        .mb-chip { fill: #1a1f27; stroke: #ff3b3b; stroke-width: 2; }
+
+        .panel {
+            min-width: 260px;
+            max-width: 70vw;
+            padding: 22px 26px;
+            border-radius: 16px;
+            background: rgba(10, 10, 10, 0.6);
+            border: 2px solid rgba(255,0,0,0.35);
+            box-shadow: 0 0 24px rgba(255,0,0,0.35), inset 0 0 18px rgba(255,0,0,0.15);
+            text-align: center;
+        }
+        .title { font-size: 28px; margin-bottom: 12px; color: #ff4d4d; font-family: 'Courier New', monospace; }
+        .desc { font-size: 16px; opacity: 0.9; font-family: 'Courier New', monospace; margin-bottom: 12px; }
+
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.75); border: 1px solid #ff2e2e; color: #ffb3b3;
+            padding: 10px 14px; border-radius: 8px; box-shadow: 0 0 14px rgba(255,0,0,0.5);
+            font: 600 13px 'Courier New', monospace; z-index: 11;
+        }
+
+        /* Links centralizados com o mesmo tema */
+        .link-bar { display: flex; gap: 14px; justify-content: center; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+        .link-btn {
+            text-decoration: none;
+            color: #ffb3b3;
+            background: rgba(10, 10, 10, 0.6);
+            border: 2px solid rgba(255,0,0,0.35);
+            box-shadow: 0 0 16px rgba(255,0,0,0.35), inset 0 0 10px rgba(255,0,0,0.15);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font: 700 14px 'Courier New', monospace;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+        }
+        .link-btn:hover { transform: translateY(-2px); box-shadow: 0 0 22px rgba(255,0,0,0.7), inset 0 0 12px rgba(255,0,0,0.25); color: #ffd6d6; }
+        .link-btn:active { transform: translateY(0); }
+
+        /* Camada de terminais vermelhos */
+        .spawn-layer { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+        .terminal-red {
+            position: absolute;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #ff1a1a;
+            box-shadow: 0 0 15px #ff1a1a, 0 0 30px #ff1a1a, inset 0 0 10px rgba(255,255,255,0.3);
+            transition: transform 0.3s ease;
+            opacity: 0; transform: scale(0);
+            animation: aparecerRed 0.4s ease-out forwards;
+        }
+        @keyframes aparecerRed { to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <div class="cyberpunk-bg"></div>
+    <div class="neon-grid"></div>
+    <div class="rain-effect"></div>
+    <div class="spawn-layer" id="spawnLayer"></div>
+
+    <button class="power-back" aria-label="Voltar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffcccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="12"></line>
+            <path d="M7 13a5 5 0 1 0 10 0"></path>
+        </svg>
+    </button>
+
+    <div class="cpu-wrapper">
+        <div class="motherboard-mini" aria-label="CPU">
+            <svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid meet" id="cpu-svg">
+                <g id="cpu-chip">
+                    <rect class="mb-chip" x="245" y="150" width="150" height="120" rx="10"/>
+                    <g fill="#ff5c5c" opacity="0.9">
+                        <circle cx="260" cy="165" r="3"/><circle cx="280" cy="165" r="3"/><circle cx="300" cy="165" r="3"/><circle cx="320" cy="165" r="3"/>
+                        <circle cx="340" cy="165" r="3"/><circle cx="360" cy="165" r="3"/>
+                        <circle cx="260" cy="255" r="3"/><circle cx="280" cy="255" r="3"/><circle cx="300" cy="255" r="3"/><circle cx="320" cy="255" r="3"/>
+                        <circle cx="340" cy="255" r="3"/><circle cx="360" cy="255" r="3"/>
+                    </g>
+                    <text class="mb-label" x="320" y="215" text-anchor="middle">CPU</text>
+                </g>
+            </svg>
+        </div>
+        <div class="panel">
+            <div class="title">CPU</div>
+            <div class="desc">Ajuste o clock (GHz) e veja o brilho do chip.</div>
+            <label style="display:block;margin:8px 0;color:#ffb3b3">Clock: <span id="cpu-clock-val">0.0</span> GHz</label>
+            <input id="cpu-clock" type="range" min="0.0" max="5.0" step="0.1" value="0.0" style="width:280px">
+            <div class="link-bar">
+                <a class="link-btn" href="buscador.html">Navegar</a>
+                <a class="link-btn" href="terminal-simples.html" id="imergir-link">Imergir</a>
+                <a class="link-btn" href="apocalipse.html">Discernir</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const backBtn = document.querySelector('.power-back');
+        backBtn.addEventListener('click', () => {
+            if (document.referrer) {
+                history.back();
+            } else {
+                window.location.href = 'terminal-simples.html';
+            }
+        });
+        backBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); backBtn.click(); }
+        });
+
+        const cpuRange = document.getElementById('cpu-clock');
+        const cpuVal = document.getElementById('cpu-clock-val');
+        const cpuChip = document.getElementById('cpu-chip');
+        const spawnLayer = document.getElementById('spawnLayer');
+        let spawnInterval = null;
+        let holdStartTs = null;
+        let lastValue = null;
+        let holdTimerCheck = null;
+        function updateClock() {
+            const val = parseFloat(cpuRange.value);
+            cpuVal.textContent = val.toFixed(1);
+            const intensity = Math.min(1, (val - 1) / 4 + 0.2);
+            cpuChip.style.filter = `drop-shadow(0 0 ${8 + intensity * 12}px rgba(255,0,0,${0.3 + intensity * 0.6}))`;
+            adjustSpawner(val);
+            trackHolds(val);
+        }
+        cpuRange.addEventListener('input', updateClock);
+        updateClock();
+
+        function showToast(text) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = text;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.transition = 'opacity 250ms ease'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 260); }, 900);
+        }
+
+        // Links navegam diretamente via href
+
+        // Spawner de terminais vermelhos
+        function adjustSpawner(ghz){
+            // Mapear 0..5 GHz → 0..100 por segundo (0 desativa)
+            const perSec = Math.round((ghz / 5) * 100); // 0 -> 0, 5 -> 100
+            if (spawnInterval) { clearInterval(spawnInterval); spawnInterval = null; }
+            if (perSec <= 0) {
+                return; // desativado em 0 GHz
+            }
+            const intervalMs = Math.max(10, Math.floor(1000 / perSec));
+            spawnInterval = setInterval(spawnOnce, intervalMs);
+        }
+        function spawnOnce(){
+            const el = document.createElement('div');
+            el.className = 'terminal-red';
+            const x = Math.random() * (window.innerWidth - 20);
+            const y = Math.random() * (window.innerHeight - 20);
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            spawnLayer.appendChild(el);
+            // limpeza após alguns segundos para não acumular demais
+            setTimeout(() => el.remove(), 6000);
+        }
+
+        // Redirecionamentos por manutenção de valor
+        function trackHolds(val){
+            const now = Date.now();
+            if (lastValue === null || val !== lastValue){
+                lastValue = val;
+                holdStartTs = now;
+                if (holdTimerCheck) { clearInterval(holdTimerCheck); holdTimerCheck = null; }
+                holdTimerCheck = setInterval(() => checkHolds(), 200);
+            }
+        }
+        function checkHolds(){
+            if (holdStartTs == null || lastValue == null) return;
+            const heldMs = Date.now() - holdStartTs;
+            if (Math.abs(lastValue - 2.5) < 0.001 && heldMs >= 15000){
+                clearInterval(holdTimerCheck); holdTimerCheck = null;
+                window.location.href = 'buscador.html';
+            } else if (Math.abs(lastValue - 5.0) < 0.001 && heldMs >= 30000){
+                clearInterval(holdTimerCheck); holdTimerCheck = null;
+                window.location.href = 'apocalipse.html';
+            }
+        }
+    </script>
+</body>
+</html>
+
+
